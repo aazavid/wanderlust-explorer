@@ -1,5 +1,6 @@
-import { MapPin, Star, Calendar, Play, X } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { MapPin, Star, Calendar, Play, Heart, Share2 } from "lucide-react";
+import { useState } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Destination } from "@/types/travel";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface DestinationDetailsProps {
   destination: Destination | null;
@@ -15,10 +18,40 @@ interface DestinationDetailsProps {
 }
 
 const DestinationDetails = ({ destination, open, onOpenChange }: DestinationDetailsProps) => {
+  const [isSaved, setIsSaved] = useState(false);
+
   if (!destination) return null;
 
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), "d MMM yyyy", { locale: ru });
+  };
+
+  const handleSave = () => {
+    setIsSaved(!isSaved);
+    if (!isSaved) {
+      toast.success(`${destination.name} добавлен в избранное`);
+    } else {
+      toast.info(`${destination.name} удалён из избранного`);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: destination.name,
+      text: `Посмотри это место: ${destination.name}, ${destination.country}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(`${destination.name}, ${destination.country} - ${window.location.href}`);
+      toast.success("Ссылка скопирована в буфер обмена");
+    }
   };
 
   return (
@@ -34,8 +67,29 @@ const DestinationDetails = ({ destination, open, onOpenChange }: DestinationDeta
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             
+            {/* Action Buttons */}
+            <div className="absolute right-4 top-4 flex items-center gap-2">
+              <button
+                onClick={handleShare}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-card/90 text-foreground backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-card"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handleSave}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110",
+                  isSaved
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card/90 text-foreground hover:bg-card"
+                )}
+              >
+                <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
+              </button>
+            </div>
+
             {/* Rating Badge */}
-            <div className="absolute right-4 top-4 flex items-center gap-1 rounded-lg bg-card/90 px-3 py-1.5 text-sm font-medium backdrop-blur-sm">
+            <div className="absolute left-4 top-4 flex items-center gap-1 rounded-lg bg-card/90 px-3 py-1.5 text-sm font-medium backdrop-blur-sm">
               <Star className="h-4 w-4 fill-travel-sunset text-travel-sunset" />
               {destination.rating}
             </div>

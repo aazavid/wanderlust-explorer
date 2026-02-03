@@ -42,3 +42,37 @@ export interface InterestTag {
   labelRu: string;
   active: boolean;
 }
+
+// User profile types
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  phone?: string;
+  city?: string;
+  bio?: string;
+}
+
+export interface UserPreferences {
+  travelStyle: string[];
+  budgetRange: 'low' | 'medium' | 'high' | 'luxury';
+  preferredSeasons: string[];
+  interests: string[];
+  avoidCategories: string[];
+}
+
+export interface Companion {
+  id: string;
+  name: string;
+  avatar: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  sharedTrips: number;
+}
+
+export interface SavedPlace {
+  id: string;
+  destination: Destination;
+  savedAt: string;
+  notes?: string;
+}
