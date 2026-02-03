@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import VideoCarousel from "./VideoCarousel";
 import EventList from "./EventList";
+import DestinationDetails from "./DestinationDetails";
 import { Destination } from "@/types/travel";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ interface DestinationCardProps {
 
 const DestinationCard = ({ destination, index }: DestinationCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   return (
     <div
@@ -72,11 +74,22 @@ const DestinationCard = ({ destination, index }: DestinationCardProps) => {
               {destination.eventsCount} событий
             </div>
             
-            <Button variant="outline" className="flex-1 gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1 gap-2"
+              onClick={() => setIsDetailsOpen(true)}
+            >
               <Info className="h-4 w-4" />
               Подробнее
             </Button>
           </div>
+
+          {/* Details Sheet */}
+          <DestinationDetails
+            destination={destination}
+            open={isDetailsOpen}
+            onOpenChange={setIsDetailsOpen}
+          />
         </div>
 
         {/* Right: Video & Events Section */}
