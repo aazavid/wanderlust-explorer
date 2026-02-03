@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Star, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Calendar, Star, Info, ChevronDown, ChevronUp, Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import VideoCarousel from "./VideoCarousel";
@@ -6,6 +6,7 @@ import EventList from "./EventList";
 import DestinationDetails from "./DestinationDetails";
 import { Destination } from "@/types/travel";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface DestinationCardProps {
   destination: Destination;
@@ -15,6 +16,35 @@ interface DestinationCardProps {
 const DestinationCard = ({ destination, index }: DestinationCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = () => {
+    setIsSaved(!isSaved);
+    if (!isSaved) {
+      toast.success(`${destination.name} добавлен в избранное`);
+    } else {
+      toast.info(`${destination.name} удалён из избранного`);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: destination.name,
+      text: `Посмотри это место: ${destination.name}, ${destination.country}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(`${destination.name}, ${destination.country} - ${window.location.href}`);
+      toast.success("Ссылка скопирована в буфер обмена");
+    }
+  };
 
   return (
     <div
@@ -34,6 +64,26 @@ const DestinationCard = ({ destination, index }: DestinationCardProps) => {
             <div className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-card/90 px-2 py-1 text-sm font-medium backdrop-blur-sm">
               <Star className="h-4 w-4 fill-travel-sunset text-travel-sunset" />
               {destination.rating}
+            </div>
+            {/* Save & Share buttons on image */}
+            <div className="absolute left-3 top-3 flex gap-2">
+              <button
+                onClick={handleSave}
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110",
+                  isSaved
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card/90 text-foreground hover:bg-card"
+                )}
+              >
+                <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
+              </button>
+              <button
+                onClick={handleShare}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-card/90 text-foreground backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-card"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
